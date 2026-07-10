@@ -1,65 +1,98 @@
-let currentMode = 'User';
-
-function setMode(mode) {
-    currentMode = mode;
-    document.getElementById('currentModeLabel').innerText = mode.toUpperCase() === 'USER' ? 'ID' : mode.split(' ')[0].toUpperCase();
-    
-    // Aktif buton stilini değiştirme
-    const buttons = document.querySelectorAll('.mode-btn');
-    buttons.forEach(btn => {
-        if(btn.innerText.includes(mode)) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+// Discord Snowflake ID'sinden hesap açılış tarihini bulan fonksiyon
+function getDiscordDate(id) {
+    try {
+        const discordEpoch = 1420070400000;
+        const idAsBigInt = BigInt(id);
+        const timestamp = Number((idAsBigInt >> 22n) + BigInt(discordEpoch));
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) + " " + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+        return "Bilinmeyen Tarih";
+    }
 }
 
 async function executeLookup() {
-    const inputVal = document.getElementById('targetId').value.trim();
+    const userId = document.getElementById('targetId').value.trim();
     const card = document.getElementById('resultCard');
     
-    if(!inputVal) {
-        alert("Lütfen geçerli bir ID girin!");
+    if (!userId || isNaN(userId)) {
+        alert("Lütfen geçerli bir sayısal Discord ID'si girin!");
         return;
     }
 
-    // Görseldeki şablonu dolduracak örnek dinamik veri yapısı (API entegrasyonu buraya bağlanır)
-    let mockData = {};
+    try {
+        // Canlı API Köprüsü üzerinden veri çekme isteği (Lanyard REST API)
+        const response = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
+        const apiData = await response.json();
 
-    if (currentMode === 'User' || currentMode === 'Bot') {
-        mockData = {
-            id: inputVal,
-            username: currentMode === 'Bot' ? "MüzikBotu" : "huzxurr",
-            global_name: currentMode === 'Bot' ? "Pro Bot v4" : "script",
-            discriminator: "0000",
-            type: currentMode,
-            created_at: "21 Şubat 2024 Çarşamba 17:11",
-            avatar_url: currentMode === 'Bot' ? "https://cdn.discordapp.com/embed/avatars/2.png" : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-        };
-    } else if (currentMode === 'Server') {
-        mockData = {
-            id: inputVal,
-            name: "Yazılımcılar Topluluğu",
-            type: "Guild / Server",
-            member_count: 1420,
-            created_at: "10 Ocak 2023 Salı 12:00",
-            avatar_url: "https://cdn.discordapp.com/embed/avatars/4.png"
-        };
+        if (!apiData.success) {
+            alert("Kullanıcı API veritabanında aktif değil veya ID hatalı.");
+            return;
+        }
+
+        const data = apiData.data;
+        const user = data.discord_user;
+
+        // 1. Temel İsim ve Künye Bilgileri
+        document.getElementById('resName').innerText = user.display_name || user.username;
+        document.getElementById('resSubname').innerText = `@${user.username}`;
+        document.getElementById('resId').innerText = user.id;
+
+        // 2. Avatar Kurulumu
+        if (user.avatar) {
+            document.getElementById('resAvatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+        } else {
+            document.getElementById('resAvatar').src = `https://cdn.discordapp.com/embed/avatars/0.png`;
+        }
+
+        // 3. Banner (Profil Arkası) Ayarı
+        const bannerArea = document.getElementById('resBanner');
+        if (user.banner) {
+            bannerArea.style.backgroundImage = `url('https://cdn.discordapp.com/banners/${user.id}/${user.banner}.png?size=600')`;
+        } else {
+            bannerArea.style.backgroundImage = 'none';
+            bannerArea.style.backgroundColor = user.accent_color ? `#${user.accent_color.toString(16)}` : '#5865F2';
+        }
+
+        // 4. Hesap Kuruluş Tarihi Hesaplama
+        document.getElementById('resDate').innerText = getDiscordDate(user.id);
+
+        // 5. Yazılımlar, Kodlama Araçları veya Oyunlar (Activities)
+        const actBox = document.getElementById('activityBox');
+        if (data.activities && data.activities.length > 0) {
+            const primaryAct = data.activities[0];
+            document.getElementById('actTitle').innerText = `${primaryAct.name}`;
+            document.getElementById('actDesc').innerText = `${primaryAct.details || ''} ${primaryAct.state || ''}`;
+            actBox.style.display = 'block';
+        } else {
+            actBox.style.display = 'none';
+        }
+
+        // 6. Rozetler ve Nitro Analizi
+        const badgeContainer = document.getElementById('resBadges');
+        badgeContainer.innerHTML = ''; // İçini temizle
+        
+        if (data.active_on_discord_desktop || data.active_on_discord_mobile) {
+            // Aktiflik durumuna göre Nitro veya platform amblemi simüle edilebilir
+            document.getElementById('resNitro').innerText = "Nitro Avantajları Aktif (Rozetleri İnceleyin)";
+            
+            // Örnek Nitro Simgesi Ekleme
+            const nitroBadge = document.createElement('img');
+            nitroBadge.src = 'https://cdn.discordapp.com/emojis/1043862211604529222.webp?size=44&quality=lossless';
+            nitroBadge.className = 'badge-icon';
+            badgeContainer.appendChild(nitroBadge);
+        } else {
+            document.getElementById('resNitro').innerText = "Belirlenemedi";
+        }
+
+        // Ham API Çıktısını JSON olarak en altta gösterme
+        document.getElementById('jsonOutput').textContent = JSON.stringify(apiData, null, 4);
+        
+        // Kartı görünür yap
+        card.style.display = 'block';
+
+    } catch (error) {
+        console.error("API Hatası:", error);
+        alert("API sunucusuyla iletişim kurulurken bir hata meydana geldi.");
     }
-
-    // Arayüze verileri giydirme
-    document.getElementById('resName').innerText = mockData.global_name || mockData.name;
-    document.getElementById('resSubname').innerText = `@${mockData.username || 'server'}`;
-    document.getElementById('resId').innerText = mockData.id;
-    document.getElementById('resType').innerText = mockData.type;
-    document.getElementById('resDate').innerText = mockData.created_at;
-    document.getElementById('resAvatar').src = mockData.avatar_url;
-
-    // JSON formatında ham veriyi en alttaki kutuya basma (Görsel 2'deki gibi)
-    document.getElementById('jsonOutput').textContent = JSON.stringify(mockData, null, 4);
-
-    // Kartı görünür yap
-    card.style.display = 'block';
 }
-
