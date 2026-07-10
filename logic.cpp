@@ -2,20 +2,17 @@
 #include <string>
 
 extern "C" {
-    // Arayüz moduna göre ID uzunluğunu ve doğruluğunu kontrol eden C++ fonksiyonu
-    bool validate_discord_id(const char* id, const char* mode) {
-        std::string discord_id(id);
-        std::string current_mode(mode);
+    // API'den gelen veride kullanıcının aktif olarak bir yazılım/kodlama aracı çalıştırıp çalıştırmadığını filtreleyen fonksiyon
+    bool has_active_software(const char* activity_json) {
+        std::string jsonStr(activity_json);
         
-        // Discord kar tanesi (Snowflake) ID yapısı genellikle 17 ile 20 karakter arası rakamlardan oluşur
-        if (discord_id.length() < 17 || discord_id.length() > 20) {
-            return false;
+        // Gelen JSON datasında oyun veya editör belirtisi aranıyor
+        if (jsonStr.find("vscode") != std::string::npos || 
+            jsonStr.find("pydroid") != std::string::npos || 
+            jsonStr.find("game") != std::string::npos) {
+            return true;
         }
-        
-        for (char const &c : discord_id) {
-            if (std::isdigit(c) == 0) return false;
-        }
-        
-        return true;
+        return false;
     }
 }
+
