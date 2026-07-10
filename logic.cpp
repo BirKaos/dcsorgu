@@ -1,15 +1,21 @@
 #include <iostream>
 #include <string>
 
-// WebAssembly için dışa aktarma makrosu (isteğe bağlı, JS doğrudan veriyi de yönetebilir)
 extern "C" {
-    // Girilen ID'nin geçerli bir Discord ID uzunluğunda (17-19 karakter) olup olmadığını kontrol eden basit bir C++ fonksiyonu
-    bool check_id_validity(const char* id) {
-        std::string s_id(id);
-        if (s_id.length() >= 17 && s_id.length() <= 20) {
-            return true;
+    // Arayüz moduna göre ID uzunluğunu ve doğruluğunu kontrol eden C++ fonksiyonu
+    bool validate_discord_id(const char* id, const char* mode) {
+        std::string discord_id(id);
+        std::string current_mode(mode);
+        
+        // Discord kar tanesi (Snowflake) ID yapısı genellikle 17 ile 20 karakter arası rakamlardan oluşur
+        if (discord_id.length() < 17 || discord_id.length() > 20) {
+            return false;
         }
-        return false;
+        
+        for (char const &c : discord_id) {
+            if (std::isdigit(c) == 0) return false;
+        }
+        
+        return true;
     }
 }
-
