@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Lookup</title>
+    <title>Discord Lookup Pro</title>
     <style>
         :root {
             --bg-color: #0b0f17;
@@ -20,7 +20,7 @@
                               linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
             background-size: 20px 20px;
             color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -30,214 +30,90 @@
             padding: 20px;
         }
 
-        .search-section {
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-
-        .title {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            margin-bottom: 25px;
-            font-size: 0.95rem;
-        }
+        .search-section { text-align: center; max-width: 500px; width: 100%; margin-bottom: 25px; }
+        .title { font-size: 2rem; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
+        .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; }
 
         .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: #182030;
-            border: 2px solid var(--border);
-            border-radius: 50px;
-            padding: 6px 12px;
-            margin-bottom: 20px;
-            transition: border-color 0.3s;
+            display: flex; align-items: center; background: #182030;
+            border: 2px solid var(--border); border-radius: 50px; padding: 6px 12px; margin-bottom: 15px;
         }
+        .input-wrapper input { background: transparent; border: none; outline: none; color: white; font-size: 1rem; width: 100%; }
+        .search-btn { background: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-weight: bold; }
 
-        .input-wrapper:focus-within {
-            border-color: var(--accent);
-        }
-
-        .input-wrapper span {
-            background: #222d42;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: var(--text-muted);
-            margin-right: 10px;
-        }
-
-        input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            font-size: 1rem;
-            width: 100%;
-        }
-
-        .search-btn {
-            background: white;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .modes-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .mode-btn {
-            background: #182030;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .mode-btn.active, .mode-btn:hover {
-            border-color: var(--text-muted);
-            color: white;
-            background: #222d42;
-        }
-
-        /* Sonuç Kartı Tasarımı */
+        /* Profil Kartı Tasarımı */
         .result-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            width: 100%;
-            max-width: 450px;
-            padding: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            display: none;
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px;
+            width: 100%; max-width: 450px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: none;
         }
 
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
+        /* Banner Alanı */
+        .banner-area { height: 120px; background: #5865F2; background-size: cover; background-position: center; position: relative; }
 
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #2c3e50;
-            object-fit: cover;
-        }
+        .profile-header { padding: 0 24px; position: relative; margin-top: -45px; margin-bottom: 15px; }
+        .avatar { width: 90px; height: 90px; border-radius: 50%; border: 5px solid var(--card-bg); background: #2c3e50; object-fit: cover; }
+        
+        .badge-container { position: absolute; right: 24px; bottom: 10px; display: flex; gap: 8px; }
+        .badge-icon { width: 22px; height: 22px; }
 
-        .profile-names h2 {
-            margin: 0;
-            font-size: 1.4rem;
-        }
+        .profile-names { padding: 0 24px; }
+        .profile-names h2 { margin: 0; font-size: 1.5rem; }
+        .profile-names p { margin: 4px 0; color: var(--text-muted); font-size: 0.95rem; }
 
-        .profile-names p {
-            margin: 4px 0 0 0;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .details-list {
-            border-top: 1px solid var(--border);
-            padding-top: 15px;
-        }
-
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
-
+        .section-title { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 15px 24px 5px 24px; border-top: 1px solid var(--border); margin-top: 15px; }
+        .details-list { padding: 0 24px 15px 24px; }
+        .detail-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
         .detail-label { color: var(--text-muted); }
         .detail-value { font-weight: 500; }
 
-        /* JSON Kutusu */
-        .json-wrapper {
-            margin-top: 20px;
-            background: #090d16;
-            border-radius: 12px;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: #34d399;
-            overflow-x: auto;
-            max-height: 200px;
-            text-align: left;
-            border: 1px solid var(--border);
-        }
+        /* Çalışan Yazılımlar Sekmesi */
+        .activity-box { background: #182030; margin: 10px 24px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); display: none; }
+        .activity-title { font-weight: bold; font-size: 0.9rem; color: #34d399; margin-bottom: 4px; }
+        .activity-desc { font-size: 0.85rem; color: var(--text-main); }
+
+        .json-wrapper { background: #090d16; border-radius: 12px; margin: 15px 24px; padding: 12px; font-family: monospace; font-size: 0.8rem; color: #34d399; overflow-x: auto; max-height: 150px; text-align: left; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
 <div class="search-section">
-    <div class="title">Discord Lookup</div>
-    <div class="subtitle">What are you searching for in Discord data?</div>
+    <div class="title">Discord Lookup Pro</div>
+    <div class="subtitle">API Bağlantılı Detaylı Kullanıcı Sorgulama Sistemi</div>
 
     <div class="input-wrapper">
-        <span id="currentModeLabel">ID</span>
-        <input type="text" id="targetId" placeholder="Enter ID...">
+        <input type="text" id="targetId" placeholder="Discord Kullanıcı ID girin (Örn: 1209910370341224450)...">
         <button class="search-btn" onclick="executeLookup()">↑</button>
-    </div>
-
-    <div class="modes-container">
-        <button class="mode-btn active" onclick="setMode('User')">👤 User Lookup</button>
-        <button class="mode-btn" onclick="setMode('Bot')">🤖 Bot Lookup</button>
-        <button class="mode-btn" onclick="setMode('Server')">📦 Server Lookup</button>
-        <button class="mode-btn" onclick="setMode('DM Group')">💬 DM Group Lookup</button>
     </div>
 </div>
 
 <div class="result-card" id="resultCard">
+    <!-- Banner -->
+    <div id="resBanner" class="banner-area"></div>
+
     <div class="profile-header">
-        <img id="resAvatar" class="avatar" src="" alt="Target Avatar">
-        <div class="profile-names">
-            <h2 id="resName">Target Name</h2>
-            <p id="resSubname">@username</p>
-        </div>
+        <img id="resAvatar" class="avatar" src="" alt="Avatar">
+        <!-- Rozetler -->
+        <div id="resBadges" class="badge-container"></div>
     </div>
 
+    <div class="profile-names">
+        <h2 id="resName">Yükleniyor...</h2>
+        <p id="resSubname">@username</p>
+    </div>
+
+    <!-- Aktif Yazılımlar / Oyunlar -->
+    <div class="section-title">Aktif Yazılım / Durum</div>
+    <div id="activityBox" class="activity-box">
+        <div id="actTitle" class="activity-title">Oynuyor: VS Code</div>
+        <div id="actDesc" class="activity-desc">script.js düzenleniyor...</div>
+    </div>
+
+    <!-- Hesap Detayları -->
+    <div class="section-title">Kullanıcı Detayları</div>
     <div class="details-list">
-        <div class="detail-item">
-            <div class="detail-label">Kimlik ID</div>
-            <div class="detail-value" id="resId">-</div>
-        </div>
-        <div class="detail-item">
-            <div class="detail-label">Hesap Türü</div>
-            <div class="detail-value" id="resType">-</div>
-        </div>
-        <div class="detail-item">
-            <div class="detail-label">Oluşturulma Tarihi</div>
-            <div class="detail-value" id="resDate">-</div>
-        </div>
+        <div class="detail-item"><div class="detail-label">Kullanıcı ID</div><div class="detail-value" id="resId">-</div></div>
+        <div class="detail-item"><div class="detail-label">Hesap Kuruluş Tarihi</div><div class="detail-value" id="resDate">-</div></div>
+        <div class="detail-item"><div class="detail-label">Nitro Durumu</div><div class="detail-value" id="resNitro">Aktif Değil veya Gizli</div></div>
     </div>
 
     <div class="json-wrapper">
@@ -248,4 +124,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
