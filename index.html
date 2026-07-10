@@ -3,67 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord ID Lookup</title>
+    <title>Discord Lookup</title>
     <style>
+        :root {
+            --bg-color: #0b0f17;
+            --card-bg: #131926;
+            --accent: #5865F2;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #1e293b;
+        }
+
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            justify-content: center;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
-        .container {
-            background-color: #1e293b;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+
+        .search-section {
             text-align: center;
-            width: 400px;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 30px;
         }
-        input {
-            width: 80%;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            background-color: #334155;
-            color: white;
-            font-size: 16px;
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
         }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            background-color: #5865F2;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #182030;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            padding: 6px 12px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--accent);
+        }
+
+        .input-wrapper span {
+            background: #222d42;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: bold;
+            color: var(--text-muted);
+            margin-right: 10px;
         }
-        button:hover { background-color: #4752c4; }
-        .result { margin-top: 20px; display: none; }
-        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #5865F2; }
+
+        input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .search-btn {
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .modes-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            background: #182030;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mode-btn.active, .mode-btn:hover {
+            border-color: var(--text-muted);
+            color: white;
+            background: #222d42;
+        }
+
+        /* Sonuç Kartı Tasarımı */
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 450px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: none;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #2c3e50;
+            object-fit: cover;
+        }
+
+        .profile-names h2 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .profile-names p {
+            margin: 4px 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .details-list {
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .detail-label { color: var(--text-muted); }
+        .detail-value { font-weight: 500; }
+
+        /* JSON Kutusu */
+        .json-wrapper {
+            margin-top: 20px;
+            background: #090d16;
+            border-radius: 12px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #34d399;
+            overflow-x: auto;
+            max-height: 200px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Discord ID Sorgula</h2>
-    <input type="text" id="userId" placeholder="Discord Kullanıcı ID Girin...">
-    <br>
-    <button onclick="sorgula()">Sorgula</button>
+<div class="search-section">
+    <div class="title">Discord Lookup</div>
+    <div class="subtitle">What are you searching for in Discord data?</div>
 
-    <div class="result" id="resultBox">
-        <img id="userAvatar" class="avatar" src="" alt="Avatar">
-        <h3 id="userName">Kullanıcı Adı</h3>
-        <p id="userTag"></p>
+    <div class="input-wrapper">
+        <span id="currentModeLabel">ID</span>
+        <input type="text" id="targetId" placeholder="Enter ID...">
+        <button class="search-btn" onclick="executeLookup()">↑</button>
+    </div>
+
+    <div class="modes-container">
+        <button class="mode-btn active" onclick="setMode('User')">👤 User Lookup</button>
+        <button class="mode-btn" onclick="setMode('Bot')">🤖 Bot Lookup</button>
+        <button class="mode-btn" onclick="setMode('Server')">📦 Server Lookup</button>
+        <button class="mode-btn" onclick="setMode('DM Group')">💬 DM Group Lookup</button>
+    </div>
+</div>
+
+<div class="result-card" id="resultCard">
+    <div class="profile-header">
+        <img id="resAvatar" class="avatar" src="" alt="Target Avatar">
+        <div class="profile-names">
+            <h2 id="resName">Target Name</h2>
+            <p id="resSubname">@username</p>
+        </div>
+    </div>
+
+    <div class="details-list">
+        <div class="detail-item">
+            <div class="detail-label">Kimlik ID</div>
+            <div class="detail-value" id="resId">-</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Hesap Türü</div>
+            <div class="detail-value" id="resType">-</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label">Oluşturulma Tarihi</div>
+            <div class="detail-value" id="resDate">-</div>
+        </div>
+    </div>
+
+    <div class="json-wrapper">
+        <pre id="jsonOutput"></pre>
     </div>
 </div>
 
 <script src="script.js"></script>
 </body>
-  </html>
+</html>
 
